@@ -10,7 +10,7 @@ int main(int argc, char * argv[])
     }
 
     unsigned long long * buff;
-    buff = new unsigned long long[BUFFER_SIZE];
+    buff = new unsigned long long[BUFFER_SIZE/sizeof(unsigned long long)];
     if(!buff)
     {
         printf("Error!\n");
@@ -31,12 +31,12 @@ int main(int argc, char * argv[])
 
         do
         {
-            readed = fread(buff, sizeof(unsigned long long), BUFFER_SIZE, input);
+            readed = fread(buff, sizeof(unsigned long long), BUFFER_SIZE/sizeof(unsigned long long), input);
             if(lastReaded > buff[0])
                 isSorted = false;
             for(unsigned long long j = 0; isSorted && readed && (j < readed - 1); ++j)
             {
-                isSorted = buff[j] < buff[j + 1] ? true : false;
+                isSorted = buff[j] <= buff[j + 1] ? true : false;
             }
             lastReaded = buff[readed];
         }
