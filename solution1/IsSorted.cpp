@@ -9,8 +9,9 @@ int main(int argc, char * argv[])
         printf("Error!\n");
     }
 
+    unsigned long long sizeInLLU = BUFFER_SIZE/sizeof(unsigned long long);
     unsigned long long * buff;
-    buff = new unsigned long long[BUFFER_SIZE/sizeof(unsigned long long)];
+    buff = new unsigned long long[sizeInLLU];
     if(!buff)
     {
         printf("Error!\n");
@@ -20,7 +21,7 @@ int main(int argc, char * argv[])
     for(int i = 1; i < argc; ++i)
     {
         bool isSorted = true;
-        unsigned long long readed, lastReaded = 0;
+        unsigned long long read, lastRead = 0;
         printf("Start %s\n", argv[i]);
         FILE * input = fopen(argv[i], "r");
         if(!input)
@@ -31,16 +32,16 @@ int main(int argc, char * argv[])
 
         do
         {
-            readed = fread(buff, sizeof(unsigned long long), BUFFER_SIZE/sizeof(unsigned long long), input);
-            if(lastReaded > buff[0])
+            read = fread(buff, sizeof(unsigned long long), sizeInLLU, input);
+            if(lastRead > buff[0])
                 isSorted = false;
-            for(unsigned long long j = 0; isSorted && readed && (j < readed - 1); ++j)
+            for(unsigned long long j = 0; isSorted && read && (j < read - 1); ++j)
             {
                 isSorted = buff[j] <= buff[j + 1] ? true : false;
             }
-            lastReaded = buff[readed];
+            lastRead = buff[read];
         }
-        while(readed && isSorted);
+        while(read && isSorted);
 
         if(isSorted)
             printf("%s is sorted!\n", argv[i]);
