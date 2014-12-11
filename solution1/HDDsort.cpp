@@ -4,6 +4,7 @@
 #include <vector>
 
 #define FILE_BUFF_SIZE 4096
+#define BUFFER_SIZE 1024 * 1024 * 64
 
 class ULLbuffFile
 {
@@ -76,7 +77,7 @@ void mergeTwoFiles(FILE * leftFile, FILE * rightFile, FILE * result)
 }
 
 //memory size in LLUs
-bool HDDsort(FILE * fileForSort, unsigned long memorySize, unsigned long long * memory)
+bool HDDsort(FILE * fileForSort, char * destName, unsigned long memorySize, unsigned long long * memory)
 {
     std::vector<unsigned> tmpFiles;
     unsigned read = fread(memory, sizeof(unsigned long long), memorySize, fileForSort);
@@ -111,7 +112,7 @@ bool HDDsort(FILE * fileForSort, unsigned long memorySize, unsigned long long * 
         if(tmpFiles.size() > 2)
             sprintf(tmpName, "tmpfile%u", filesCnt);
         else //last merge
-            sprintf(tmpName, "result", filesCnt);
+            sprintf(tmpName, destName, filesCnt);
         FILE * merged   = fopen(tmpName, "w");
         tmpFiles.push_back(filesCnt);
         if(!left || !right || !merged)
@@ -144,14 +145,14 @@ int main(int argc, char * argv[])
         printf("Error!");
         return 0;
     }
-    unsigned long memsize = 16777216;
+    unsigned long memsize = BUFFER_SIZE/sizeof(unsigned long long);
     unsigned long long * mem = new unsigned long long[memsize];
     if(!mem)
     {
         printf("Error!");
         return 0;
     }
-    HDDsort(fileForSort, memsize, mem);
+    HDDsort(fileForSort, argv[1], memsize, mem);
     delete[] mem;
     return 0;
 }
