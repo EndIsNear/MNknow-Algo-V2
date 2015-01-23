@@ -60,7 +60,7 @@ public:
 private:
 	bool Insert(K key, V& val, BTreeNode<K,V> * node)
 	{
-		if (key >= node->key)
+		if (key > node->key)
 		{
 			if (node->pRight)
 			{
@@ -72,7 +72,7 @@ private:
 				return node->pRight ? true : false;
 			}
 		}
-		else
+		else if (key < node->key)
 		{
 			if (node->pLeft)
 			{
@@ -83,6 +83,11 @@ private:
 				node->pLeft = new (std::nothrow) BTreeNode<K,V>(key, val);
 				return node->pLeft ? true : false;
 			}
+		}
+		else
+		{
+			node->val = val;
+			return true;
 		}
 	}
 
@@ -115,7 +120,7 @@ private:
 			BTreeNode<K,V> * tmp = this->FindMin(nodeForDel->pRight);
 			nodeForDel->val = tmp->val;
 			nodeForDel->key = tmp->key;
-			this->Remove(tmp->key, tmp);
+			return this->Remove(tmp->key, tmp->pLeft);
 		}
 
 		//0 or 1 child
