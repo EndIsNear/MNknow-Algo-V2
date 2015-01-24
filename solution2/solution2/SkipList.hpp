@@ -5,41 +5,43 @@
 
 #define MAX_SKIP_LIST_HEIGHT 32
 
-template <typename T>
+template <typename K, typename V>
 struct SListNode 
 {
-	SListNode(T& _val, unsigned _height) : val(_val), height(_height)
+	SListNode(K _key, V& _val, unsigned _height = MAX_SKIP_LIST_HEIGHT) : key(_key), val(_val), height(_height)
 	{
 		for (unsigned i = 0; i < MAX_SKIP_LIST_HEIGHT; ++i)
 		{
 			level[i] =  NULL;
 		}
 	}
-	T val;
-	SListNode<T> * level[MAX_SKIP_LIST_HEIGHT];
+	K key;
+	V val;
+	SListNode<K, V> * level[MAX_SKIP_LIST_HEIGHT];
 	unsigned height;
 };
 
 
 
-template <typename T>
+template <typename K, typename V>
 class SkipList
 {
 public:
-	SkipList(T _minVal,T _maxVal)
+	SkipList(K _minKey,K _maxKey)
 	{
-		this->pHead = new SListNode<T>(_minVal, MAX_SKIP_LIST_HEIGHT);
-		this->pTail = new SListNode<T>(_maxVal, MAX_SKIP_LIST_HEIGHT);
+		V tmp = V();
+		this->pHead = new SListNode<K,V>(_minKey, tmp);
+		this->pTail = new SListNode<K,V>(_maxKey, tmp);
 		for (unsigned i = 0; i < MAX_SKIP_LIST_HEIGHT; ++i)
 		{
 			this->pHead->level[i] = this->pTail;
 			this->pTail->level[i] = NULL;
 		}
-		srand(time(NULL));
+		srand((unsigned)time(NULL));
 	}
 	~SkipList()
 	{
-		SListNode<T> * it = this->pHead, * tmp;
+		SListNode<K,V> * it = this->pHead, * tmp;
 		while (it)
 		{
 			tmp = it;
@@ -48,16 +50,16 @@ public:
 		}
 	}
 
-	bool Insert(T& val)
+	bool Insert(K key, V& val)
 	{
-		SListNode<T> * it = this->pHead;
-		SListNode<T> * forUpdate[MAX_SKIP_LIST_HEIGHT];
+		SListNode<K,V> * it = this->pHead;
+		SListNode<K, V> * forUpdate[MAX_SKIP_LIST_HEIGHT];
 		for (unsigned i = 0; i < MAX_SKIP_LIST_HEIGHT; ++i)
 			forUpdate[i] = this->pHead;
 
 		for (int i = MAX_SKIP_LIST_HEIGHT - 1; i >= 0; --i)
 		{
-			while (it->level[i]->val < val)
+			while (it->level[i]->key < key)
 				it = it->level[i];
 
 			forUpdate[i] = it;
@@ -65,7 +67,7 @@ public:
 
 
 		unsigned tmpHeight = this->GetHeight();
-		SListNode<T> * tmp = new (std::nothrow) SListNode<T>(val, tmpHeight);
+		SListNode<K, V> * tmp = new (std::nothrow) SListNode<K,V>(key, val, tmpHeight);
 		if (!tmp)
 			return false;
 
@@ -74,39 +76,44 @@ public:
 			tmp->level[i] = forUpdate[i]->level[i];
 			forUpdate[i]->level[i] = tmp;
 		}
-		std::cout << "Inserted " << val << " with height " << tmpHeight << std::endl;
+//		std::cout << "Inserted " << val << " with height " << tmpHeight << std::endl;
 		return true;
 	}
 	
-	SListNode<T> * Find(T& val)
+	V * Find(K key)
 	{
-		SListNode<T> * it = this->pHead;
+		if (this->IsEmpty())
+			return NULL;
+
+		SListNode<K,V> * it = this->pHead;
 		for (int i = MAX_SKIP_LIST_HEIGHT - 1; i >= 0; --i)
 		{
-			while (it->level[i]->val < val)
+			while (it->level[i]->key < key)
 				it = it->level[i];
 		}
-		if (it->level[0]->val == val)
-			return it->level[0];
+		if (it->level[0]->key == key)
+			return &(it->level[0]->val);
 		else
 			return NULL;
 	}
 
-	void Remove(T& val)
+	void Remove(K key)
 	{
-		SListNode<T> * it = this->pHead;
-		SListNode<T> * forUpdate[MAX_SKIP_LIST_HEIGHT];
+		if (this->IsEmpty())
+			return;
+		SListNode<K,V> * it = this->pHead;
+		SListNode<K, V> * forUpdate[MAX_SKIP_LIST_HEIGHT];
 		for (unsigned i = 0; i < MAX_SKIP_LIST_HEIGHT; ++i)
 			forUpdate[i] = this->pHead;
 
 		for (int i = MAX_SKIP_LIST_HEIGHT - 1; i >= 0; --i)
 		{
-			while (it->level[i]->val < val)
+			while (it->level[i]->key < key)
 				it = it->level[i];
 
 			forUpdate[i] = it;
 		}
-		if (it->level[0]->val == val)
+		if (it->level[0]->key == key)
 		{
 			it = it->level[0];
 			for (int i = 0; i < MAX_SKIP_LIST_HEIGHT && forUpdate[i]->level[i] == it; ++i)
@@ -119,12 +126,12 @@ public:
 
 	bool IsEmpty()
 	{
-		return this->pHead.level[0] == this->pTail;
+		return this->pHead->level[0] == this->pTail;
 	}
 
 private:
-	SListNode<T> * pHead;
-	SListNode<T> * pTail;
+	SListNode<K,V> * pHead;
+	SListNode<K,V> * pTail;
 	//unsigned crnHeight;
 
 	unsigned GetHeight()
