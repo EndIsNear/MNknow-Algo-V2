@@ -40,7 +40,7 @@ public:
 
     V * Find(K key)
     {
-        auto res = (Find(key, this->root));
+        AVLNode<K,V> * res = (Find(key, this->root));
         return res ? &(res->val) : NULL;
     }
 
